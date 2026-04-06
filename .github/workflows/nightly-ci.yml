@@ -1,20 +1,23 @@
----
 name: Nightly CI
-run-name: Nightly CI tests triggered from @${{ github.actor }} of ${{ github.head_ref }}
-
-on:
-  workflow_dispatch:
+run-name: Nightly CI tests triggered from @${{ github.actor }} of ${{ github.head_ref
+  }}
+'on':
+  workflow_dispatch: null
   schedule:
-    # Run at 00:00 AM UTC
-    - cron: '0 0 * * *'
-
+  - cron: 0 0 * * *
 jobs:
-  # Only run on schedule
   tests-scheduled:
     strategy:
       fail-fast: false
       matrix:
-        test-mode: [legacychallenge, long, challenge, l3challenge, execution-spec-tests, pebble-a, pebble-b]
+        test-mode:
+        - legacychallenge
+        - long
+        - challenge
+        - l3challenge
+        - execution-spec-tests
+        - pebble-a
+        - pebble-b
     uses: ./.github/workflows/_go-tests.yml
     with:
       run-name: ${{ matrix.test-mode }}
@@ -25,23 +28,21 @@ jobs:
       run-execution-spec-tests: ${{ matrix.test-mode == 'execution-spec-tests' }}
       run-pebble-a: ${{ matrix.test-mode == 'pebble-a' }}
       run-pebble-b: ${{ matrix.test-mode == 'pebble-b' }}
-
   notify-on-failure:
     name: Notify Slack on failure
-    needs: [tests-scheduled]
-    runs-on: ubuntu-4
+    needs:
+    - tests-scheduled
+    runs-on: ubuntu-latest
     if: ${{ failure() }}
     env:
-      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
+        github.run_id }}
     steps:
-      - name: Send Slack notification
-        uses: slackapi/slack-github-action@v2.1.1
-        with:
-          errors: true
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          payload: |
-            {
-              "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
-              "text": "⚠️ CI job failed! ${{ env.RUN_URL }}",
-            }
+    - name: Send Slack notification
+      uses: slackapi/slack-github-action@v2.1.1
+      with:
+        errors: true
+        method: chat.postMessage
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
+        payload: "{\n  \"channel\": \"${{ secrets.SLACK_CHANNEL_ID }}\",\n  \"text\"\
+          : \"\u26A0\uFE0F CI job failed! ${{ env.RUN_URL }}\",\n}\n"
